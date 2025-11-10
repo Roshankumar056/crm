@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  passwordHash  String
+  name          String
+  role          Role           @default(SALES)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  activities    Activity[]
+  leads         Lead[]         @relation("LeadOwner")
+  leadHistories LeadHistory[]  @relation("UserHistory")
+  refreshTokens RefreshToken[] @relation("UserRefreshTokens")
+}
+
+model Lead {
+  id            String        @id @default(cuid())
+  name          String
+  company       String?
+  email         String?
+  phone         String?
+  status        LeadStatus    @default(NEW)
+  value         Float?
+  source        String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  ownerId       String?
+  activities    Activity[]
+  owner         User?         @relation("LeadOwner", fields: [ownerId], references: [id])
+  statusHistory LeadHistory[]
+}
+
+model Activity {
+  id     String       @id @default(cuid())
+  type   ActivityType
+  note   String?
+  at     DateTime     @default(now())
+  leadId String
+  userId String
+  lead   Lead         @relation(fields: [leadId], references: [id])
+  user   User         @relation(fields: [userId], references: [id])
+}
+
+model LeadHistory {
+  id        String      @id @default(cuid())
+  from      LeadStatus?
+  to        LeadStatus
+  changedAt DateTime    @default(now())
+  leadId    String
+  userId    String
+  lead      Lead        @relation(fields: [leadId], references: [id])
+  user      User        @relation("UserHistory", fields: [userId], references: [id])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  isRevoked Boolean  @default(false)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  user      User     @relation("UserRefreshTokens", fields: [userId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  SALES
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  WON
+  LOST
+}
+
+enum ActivityType {
+  NOTE
+  CALL
+  MEETING
+  STATUS_CHANGE
+  EMAIL
+}
