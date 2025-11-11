@@ -1,122 +1,113 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { api } from "../lib/api";
-import toast from "react-hot-toast";
-import { UserPlus, Loader2 } from "lucide-react";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { registerUser } from '@/store/slices/usersSlice';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft } from 'lucide-react';
 
-export default function RegisterUser() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("SALES");
-  const [loading, setLoading] = useState(false);
+const RegisterUser = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'SALES' as 'ADMIN' | 'MANAGER' | 'SALES',
+  });
 
-  const handleSubmit = async () => {
-    if (!name || !email || !password) {
-      toast.error("All fields are required");
-      return;
-    }
-    try {
-      setLoading(true);
-      await api.post("/auth/register", { name, email, password, role });
-      toast.success(`User ${name} registered as ${role}`);
-      navigate("/users");
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Failed to register user");
-    } finally {
-      setLoading(false);
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await dispatch(registerUser(formData) as any);
+    navigate('/users');
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-2xl bg-white/70 dark:bg-slate-800/80 shadow-lg backdrop-blur-md p-8 space-y-6 transition">
-        {/* Header */}
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <UserPlus className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Register New User
-          </h1>
-        </div>
+    <div className="p-6">
+      <Button
+        variant="ghost"
+        onClick={() => navigate('/users')}
+        className="mb-6 gap-2"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Users
+      </Button>
 
-        {/* Form fields */}
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
-              Full Name
-            </label>
-            <input
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter user's name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle>Register New User</CardTitle>
+          <CardDescription>
+            Add a new user to the CRM system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
-              Email Address
-            </label>
-            <input
-              type="email"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="name@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter a secure password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+                minLength={6}
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">
-              Role
-            </label>
-            <select
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="MANAGER">Manager</option>
-              <option value="SALES">Sales Executive</option>
-            </select>
-          </div>
-        </div>
+            <div>
+              <Label htmlFor="role">Role</Label>
+              <Select
+                value={formData.role}
+                onValueChange={(value: any) => setFormData({ ...formData, role: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="MANAGER">Manager</SelectItem>
+                  <SelectItem value="SALES">Sales Executive</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground mt-1">
+                {formData.role === 'ADMIN' && 'Full system access, can manage all users and leads'}
+                {formData.role === 'MANAGER' && 'Can view all leads, assign to sales, and see analytics'}
+                {formData.role === 'SALES' && 'Can view and update only assigned leads'}
+              </p>
+            </div>
 
-        {/* Submit button */}
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="w-full mt-6 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="animate-spin w-5 h-5" /> Creating...
-            </>
-          ) : (
-            <>
-              <UserPlus className="w-5 h-5" /> Register User
-            </>
-          )}
-        </button>
-
-        {/* Footer note */}
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3">
-          Only Admins can register new Managers or Sales users.
-        </p>
-      </div>
+            <Button type="submit" className="w-full">
+              Register User
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};
+
+export default RegisterUser;

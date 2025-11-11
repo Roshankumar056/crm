@@ -1,7 +1,7 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { app } from "./app";
-import { env } from "./config/env";
+import app from './app.js';
+import { env } from "./config/env.js";
 const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: { origin: "*" } });
 // Export io for controllers

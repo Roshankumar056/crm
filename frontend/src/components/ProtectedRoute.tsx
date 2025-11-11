@@ -1,13 +1,24 @@
-import { Navigate } from "react-router-dom";
-import { useAppSelector } from "../store";
-import toast from "react-hot-toast";
+import { Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
-export default function ProtectedRoute({ element, allowed }: { element: JSX.Element; allowed: Array<'ADMIN'|'MANAGER'|'SALES'> }) {
-  const { user } = useAppSelector(s => s.auth);
-  if (!user) return <Navigate to="/login" replace />;
-  if (!allowed.includes(user.role)) {
-    toast.error("Access denied for your role");
-    return <Navigate to="/" replace />;
-  }
-  return element;
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  allowedRoles?: Array<'ADMIN' | 'MANAGER' | 'SALES'>;
 }
+
+const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+export default ProtectedRoute;

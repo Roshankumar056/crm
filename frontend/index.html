@@ -3,14 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Next-Gen CRM</title>
-    <script>
-      // Apply persisted theme before paint
-      const theme = localStorage.getItem('theme');
-      if (theme === 'dark') document.documentElement.classList.add('dark');
-    </script>
+    <title>Next-Gen CRM System</title>
+    <meta name="description" content="Modern CRM system with lead management, analytics, and real-time updates" />
+    <meta name="author" content="CRM System" />
+
+    <meta property="og:title" content="Next-Gen CRM System" />
+    <meta property="og:description" content="Modern CRM system with lead management, analytics, and real-time updates" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@Lovable" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
   </head>
-  <body class="bg-gray-50 dark:bg-neutral-900">
+
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -160,4 +160,4 @@ npm run seed
 ---
 
 ## 🧾 License
-MIT © 2025 Shivam Shrivastava
+MIT © 2025 Roshan Kumar

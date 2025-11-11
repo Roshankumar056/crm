@@ -1,31 +1,101 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Provider } from "react-redux";
+import { store } from "@/store";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Leads from "./pages/Leads";
-import LeadDetail from "./pages/LeadDetail";
 import Users from "./pages/Users";
+import RegisterUser from "./pages/RegisterUser";
 import Analytics from "./pages/Analytics";
-import { useAppSelector } from "./store";
-import Shell from "./components/Shell";
+import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
-import RegisterUser from "./pages/RegisterUser"
-export default function App() {
-  const auth = useAppSelector(s => s.auth);
-  const isAuthed = !!auth.token;
-  return (
-    <Routes>
-      <Route
-        path="/users/new"
-        element={<ProtectedRoute element={<RegisterUser />} allowed={["ADMIN"]} />}/>
-      <Route path="/login" element={<Login />} />
-      <Route element={isAuthed ? <Shell /> : <Navigate to="/login" replace />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/leads" element={<ProtectedRoute element={<Leads />} allowed={["ADMIN", "MANAGER", "SALES"]} />} />
-        <Route path="/leads/:id" element={<ProtectedRoute element={<LeadDetail />} allowed={["ADMIN", "MANAGER", "SALES"]} />} />
-        <Route path="/users" element={<ProtectedRoute element={<Users />} allowed={["ADMIN", "MANAGER"]} />} />
-        <Route path="/analytics" element={<ProtectedRoute element={<Analytics />} allowed={["ADMIN", "MANAGER"]} />} />
-      </Route>
-      <Route path="*" element={<Navigate to={isAuthed ? "/" : "/login"} replace />} />
-    </Routes>
-  )
-}
+import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
+
+const queryClient = new QueryClient();
+
+const AppLayout = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex h-screen overflow-hidden">
+    <Sidebar />
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <Navbar />
+      <main className="flex-1 overflow-y-auto bg-background">
+        {children}
+      </main>
+    </div>
+  </div>
+);
+
+const App = () => (
+  <Provider store={store}>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Dashboard />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/leads"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <Leads />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                  <AppLayout>
+                    <Users />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users/new"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN']}>
+                  <AppLayout>
+                    <RegisterUser />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER']}>
+                  <AppLayout>
+                    <Analytics />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </Provider>
+);
+
+export default App;
